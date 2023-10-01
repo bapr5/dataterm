@@ -1,0 +1,30 @@
+*{
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    background-color: #ffffff;
+}
+.main{
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+/*background:linear-gradient(to right,#9c27b0,#8ecdff);*/
+    
+}
+#command {
+    cursor: text;
+    height: 50px;
+    color: #f5f5f5;
+}
+#liner {
+    line-height: 1.3em;
+    margin-top: -2px;
+    animation: show 0.5s ease forwards;
+    animation-delay: 1.2s;
+    opacity: 0;
+}
+#liner::before {
+ /*   color: #f5f4f4;*/
+    content: "visitor@fkcodes.com:~$";
+}
