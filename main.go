@@ -4,38 +4,56 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	go startup_routine()
-	fs := http.FileServer(http.Dir("./site"))
-	http.Handle("/", fs)
-	log.Print("Listening on :3000...")
-	err := http.ListenAndServe(":3000", nil)
+var entrys []BlogEntry = generateEntrysList(fillBlogs())
+
+type BlogEntry struct {
+	ID   int    `json:"id"`
+	Name string `name:"name"`
+	Date string `json:"date"`
+}
+
+func fillBlogs() []string {
+	var allblogs []string
+	files, err := os.ReadDir("./blog")
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-func startup_routine() {
 
-	var dir_blogs []string = get_dir_blogs()
-}
-
-func get_dir_blogs() []string {
-	entries, err := os.ReadDir("./blog")
-	var blogs []string
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, entry := range entries {
-		s := strings.Split(entry.Name(), ".")
-		if s[len(s)-1] == "blog" {
-			blogs = append(blogs, entry.Name())
+	for _, file := range files {
+		if !file.IsDir() {
+			allblogs = append(allblogs, file.Name())
 		}
 	}
-	for _, e := range blogs {
-		log.Print("Found:", e)
+	return allblogs
+}
+
+func generateEntrysList(myFileList []string) []BlogEntry {
+	var entrys []BlogEntry
+	for i, file := range myFileList {
+		entrys = append(entrys, BlogEntry{ID: i, Name: file, Date: getFileCreationDate(file)})
 	}
-	return blogs
+	return entrys
+}
+func getFileCreationDate(fileName string) string {
+	fileInfo, err := os.Stat("./blog/" + fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return fileInfo.ModTime().String()
+}
+
+func getBlogs(context *gin.Context) {
+	context.IndentedJSON(http.StatusOK, entrys)
+}
+
+func main() {
+	//fillBlogs()
+	router := gin.Default()
+
+	router.GET("/blogs", getBlogs)
+	router.Run("localhost:8000")
 }
